@@ -1,17 +1,5 @@
 open System
-// b inc 5 if a > 1
-// a inc 1 if b < 5
-// c dec -10 if a >= 1
-// c inc -20 if c == 10
-// These instructions would be processed as follows:
-
-// Because a starts at 0, it is not greater than 1, and so b is not modified.
-// a is increased by 1 (to 1) because b is less than 5 (it is 0).
-// c is decreased by -10 (to 10) because a is now greater than or equal to 1 (it is 1).
-// c is increased by -20 (to -10) because c is equal to 10.
-// After this process, the largest value in any register is 1.
-
-// You might also encounter <= (less than or equal to) or != (not equal to). However, the CPU doesn't have the bandwidth to tell you what all the registers are named, and leaves that to you to determine.
+open System.Collections.Generic
 
 type Operation =
     | Inc of int
@@ -55,4 +43,45 @@ let parse (input:string) =
             {targetRegister=target;operation=op;condition=condition}
     | _ -> failwith "invalid input detected"
 
-System.IO.File.ReadAllLines("inputChallenge08.txt") |> Array.map parse |> printfn "%A"
+let processor (instructions:Instruction[]) =
+    let registers = new Dictionary<string, int>()
+    instructions 
+                    |> Array.map (fun x -> x.targetRegister) 
+                    |> Array.append (instructions |> Array.map (fun x -> x.condition.registerName)) 
+                    |> Array.distinct 
+                    |> Seq.iter (fun x -> registers.Add(x,0))
+
+    let processInstruction (instruction:Instruction) = 
+        let checkingRegisterValue = registers.[instruction.condition.registerName]
+        
+        let compareFunction = match instruction.condition.comparison with
+                                | LowerThan (LiteralInt x) -> fun y -> y < x
+                                | GreaterThan (LiteralInt x) -> fun y -> y > x
+                                | Equal (LiteralInt x) -> fun y -> y = x
+                                | NotEqual (LiteralInt x) -> fun y -> y <> x
+                                | LowerThanOrEqual (LiteralInt x) -> fun y -> y <= x
+                                | GreaterThanOrEqual (LiteralInt x) -> fun y -> y >= x
+        let operationFunction = match instruction.operation with
+                                | Inc x -> fun y -> y + x
+                                | Dec x -> fun y -> y - x
+
+        let newValue = match (compareFunction checkingRegisterValue) with
+                        | true -> operationFunction registers.[instruction.targetRegister]
+                        | false -> registers.[instruction.targetRegister]
+        registers.[instruction.targetRegister] <- newValue
+        newValue
+
+    let maxMemory = instructions |> Seq.map processInstruction |> Seq.max
+    
+    (registers, maxMemory)
+
+let parseFile (filepath:string) =
+    System.IO.File.ReadAllLines(filepath) 
+    |> Array.map parse
+
+let instructions = parseFile "inputChallenge08.txt"
+instructions |> printfn "%A"
+
+let (registers, maxValue) = processor instructions
+registers |> Seq.toArray |> Seq.maxBy (fun x-> x.Value) |> printfn "%A"
+maxValue |> printfn "%d"
