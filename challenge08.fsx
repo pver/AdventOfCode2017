@@ -16,7 +16,6 @@ type Comparison =
     | LowerThanOrEqual of CompareValue
     | GreaterThanOrEqual of CompareValue
 
-type Register = {name:string; value:int}
 type Condition = {registerName:string;comparison:Comparison}
 
 type Instruction = {targetRegister:string;operation:Operation;condition:Condition}
@@ -55,14 +54,14 @@ let processor (instructions:Instruction[]) =
         let checkingRegisterValue = registers.[instruction.condition.registerName]
         
         let compareFunction = match instruction.condition.comparison with
-                                | LowerThan (LiteralInt x) -> fun y -> y < x
-                                | GreaterThan (LiteralInt x) -> fun y -> y > x
-                                | Equal (LiteralInt x) -> fun y -> y = x
-                                | NotEqual (LiteralInt x) -> fun y -> y <> x
-                                | LowerThanOrEqual (LiteralInt x) -> fun y -> y <= x
-                                | GreaterThanOrEqual (LiteralInt x) -> fun y -> y >= x
+                                | LowerThan (LiteralInt x) -> (>) x
+                                | GreaterThan (LiteralInt x) -> (<) x
+                                | Equal (LiteralInt x) -> (=) x
+                                | NotEqual (LiteralInt x) -> (<>) x
+                                | LowerThanOrEqual (LiteralInt x) -> (>=) x
+                                | GreaterThanOrEqual (LiteralInt x) -> (<=) x
         let operationFunction = match instruction.operation with
-                                | Inc x -> fun y -> y + x
+                                | Inc x -> (+) x
                                 | Dec x -> fun y -> y - x
 
         let newValue = match (compareFunction checkingRegisterValue) with
