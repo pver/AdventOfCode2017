@@ -22,7 +22,9 @@ let input () =
         )
     |> Seq.collect id
 
-let result = input() |> Seq.fold (fun groups (x, y) -> add x y groups) []
+let createConnectedGroups (data:seq<int*int>) = data |> Seq.fold (fun groups (x, y) -> add x y groups) []
+
+let result = input() |> createConnectedGroups
 printfn "Group count = %d" (result |> Seq.length)
 
 let zeroGroup = (result |> Seq.filter (fun g->g|>Seq.contains 0) |> Seq.head)

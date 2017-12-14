@@ -40,19 +40,20 @@ let processMultipleRounds (arr:int[]) (lengths:int list) =
                runRounds (roundsLeft-1) newpos newskipSize
     runRounds 64 0 0
 
-let challengeInputB = reworkInputString "88,88,211,106,141,1,78,254,2,111,77,255,90,0,54,205"
+let challengeInputB = "88,88,211,106,141,1,78,254,2,111,77,255,90,0,54,205"
 
 let xor (arr:int[]) = arr |> Array.fold (^^^) 0
 let toHex (input:int) = (sprintf "%x" input).PadLeft(2,'0')
 
-let challenge10B (lengths:int list) =
+let challenge10B (inp:string) =
+    let lengths = reworkInputString inp
     processMultipleRounds (Array.init 256 id) lengths
                 |> Array.chunkBySize 16 
                 |> Array.map (xor>>toHex)
                 |> Array.fold (+) String.Empty
 
 printfn "Challenge B result: %s" <| challenge10B challengeInputB
-let testExample = fun (x,y) ->  let result = challenge10B (reworkInputString x)
+let testExample = fun (x,y) ->  let result = challenge10B x
                                 printfn "Example '%s' should return %s => %s %s" x y result (if result=y then "OK" else "FAIL")
 
 [("", "a2582a3a0e66e6e86e3812dcb672a272"); 
