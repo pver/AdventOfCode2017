@@ -3,15 +3,16 @@
 
 let getHash = Challenge10.challenge10B
 
+let hexCharToInt (c:char) = System.Convert.ToInt32(sprintf "%c" c, 16)
+let intTo4BitString (i:int) = System.Convert.ToString(i,2).PadLeft(4,'0')
+
 let fromHexToBits (inp:string) = 
     inp.ToCharArray() 
-    |> Array.map ((fun x -> System.Convert.ToInt32(sprintf "%c" x, 16))
-                    >> (fun x -> System.Convert.ToString(x,2).PadLeft(4,'0') ) )
+    |> Array.map (hexCharToInt >> intTo4BitString)
     |> Array.fold (fun acc x->sprintf "%s%s" acc x) ""
 
 let convertToBitSquare (inp:string) = 
-    let inputs = Array.init 128 (fun x -> sprintf "%s-%d" inp x)
-    inputs 
+    Array.init 128 (fun x -> sprintf "%s-%d" inp x)
     |> Array.map (getHash >> fromHexToBits >> (fun x -> x.ToCharArray()))
 
 let exampleInput = "flqrgnkx"
