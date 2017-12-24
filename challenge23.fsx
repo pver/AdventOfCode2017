@@ -103,9 +103,8 @@ let processInstruction (state:State) (instr:Operation) (queues:MsgQueue) =
                                 {state with nextInstruction=state.nextInstruction+offset} 
 
 
-let startState (debugFlag:int) = 
+let startState () = 
     let state = {nextInstruction=0L;registers=new Dictionary<char,int64>();instrCount=new Dictionary<string,int64>()}
-    state.registers.['a'] <- (int64)debugFlag
     state.instrCount.["Set"] <- 0L
     state.instrCount.["Add"] <- 0L
     state.instrCount.["Sub"] <- 0L
@@ -115,11 +114,8 @@ let startState (debugFlag:int) =
     state.instrCount.["Rcv"] <- 0L
     state.instrCount.["Jgz"] <- 0L
     state.instrCount.["Jnz"] <- 0L
-//    printfn "start state: %A" state
     state
 
-
-//run (startState()) instructionsExample |> printfn "End state example: %A"
 let rec solve (state:State) (instructions:Operation[]) (queues:MsgQueue) =
     if state.nextInstruction < 0L || state.nextInstruction >= (int64)instructions.Length then state
     else    
@@ -131,4 +127,15 @@ let newQueues() =
     d.[0] <- []
     d.[1] <- []
     d
-solve (startState(0)) instructionsChallenge (newQueues()) |> fun x -> x.instrCount.["Mul"] |> printfn "End state challenge 23 A: %d"
+
+solve (startState()) instructionsChallenge (newQueues()) |> fun x -> x.instrCount.["Mul"] |> printfn "Challenge 23 A, Mul count = %d"
+
+let isPrime n =
+    let rec check i =
+        i > n/2 || (n % i <> 0 && check (i + 1))
+    check 2
+
+let b = 107900
+let c = 124900
+
+seq { b .. 17 .. c } |> Seq.fold (fun acc x -> if (not (isPrime(x))) then (acc + 1) else acc) 0 |> printfn "Challenge 23 B, reg 'h' = %d"
